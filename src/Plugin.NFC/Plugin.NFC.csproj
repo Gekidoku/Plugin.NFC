@@ -9,10 +9,10 @@
     <PackageId>Plugin.NFC</PackageId>
 
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-    <Version>1.0.0.0</Version>
-    <PackageVersion>1.0.0.0</PackageVersion>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <AssemblyFileVersion>1.0.1</AssemblyFileVersion>
+    <Version>1.0.1</Version>
+    <PackageVersion>1.0.1</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants);</DefineConstants>
@@ -72,6 +72,7 @@
     <DefineConstants Condition=" '$(_DROID)' == 'true' ">$(DefineConstants);__ANDROID__;__MOBILE__;</DefineConstants>
     <DefineConstants Condition=" '$(_IOS)' == 'true' ">$(DefineConstants);__IOS__;__MOBILE__;</DefineConstants>
     <DefineConstants Condition=" '$(_NET6)' == 'true' ">$(DefineConstants);__NET6__;</DefineConstants>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_NET6)' == 'true' AND '$(_MOBILE)' == 'true' ">

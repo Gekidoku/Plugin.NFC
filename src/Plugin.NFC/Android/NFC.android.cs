@@ -3,11 +3,13 @@ using Android.App;
 using Android.Content;
 using Android.Nfc;
 using Android.Nfc.Tech;
+using Android.OS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Android.Icu.Text.AlphabeticIndex;
 
 namespace Plugin.NFC
 {
@@ -158,7 +160,7 @@ namespace Plugin.NFC
 		/// </summary>
 		/// <param name="tagInfo">see <see cref="ITagInfo"/></param>
 		/// <param name="makeReadOnly">make tag read-only</param>
-		public void PublishMessage(ITagInfo tagInfo, bool makeReadOnly = false) => WriteOrClearMessage(tagInfo, false, makeReadOnly);
+		public void PublishMessage(ITagInfo tagInfo, bool makeReadOnly = false) => WriteOrClearMessageTemp(tagInfo, false, makeReadOnly);
 
 		/// <summary>
 		/// Format tag
@@ -166,13 +168,230 @@ namespace Plugin.NFC
 		/// <param name="tagInfo">see <see cref="ITagInfo"/></param>
 		public void ClearMessage(ITagInfo tagInfo) => WriteOrClearMessage(tagInfo, true);
 
-		/// <summary>
-		/// Write or Clear a NDEF message
-		/// </summary>
-		/// <param name="tagInfo"><see cref="ITagInfo"/></param>
-		/// <param name="clearMessage">Clear Message</param>
-		/// <param name="makeReadOnly">Make tag read-only</param>
-		internal void WriteOrClearMessage(ITagInfo tagInfo, bool clearMessage = false, bool makeReadOnly = false)
+
+        internal void WriteOrClearMessageTemp(ITagInfo tagInfo, bool clearMessage = false, bool makeReadOnly = false)
+        {
+            if (_currentTag == null)
+            {
+                throw new Exception("Tag Error: No Tag to write, register to NewTag event before calling WriteTag()");
+            }
+
+            Ndef ndef = Ndef.Get(_currentTag);
+
+
+            //Check if the tag can be NDEFformatted
+            var formatcheck = _currentTag.GetTechList().Contains("android.nfc.tech.NdefFormatable");
+
+            //Previous check didnt compare both just ndef being null can also mean its not formatted
+            if (ndef == null && formatcheck == false)
+            {
+                throw new Exception("Tag Error: NDEF not supported");
+            }
+            //Not formatted but can be formatted
+            if (ndef == null && formatcheck == true)
+            {
+
+
+                NdefFormatable formatable = NdefFormatable.Get(_currentTag);
+                //For some reason this could still give null even if formatcheck gave a true so /shrug
+                if (formatable == null)
+                {
+                    throw new Exception("Tag Error: NDEFformat not supported");
+                }
+                try
+                {
+                    formatable.Connect();
+
+                    OnTagConnected?.Invoke(null, EventArgs.Empty);
+                }
+                catch
+                {
+                    throw new Exception("Tag Error: No Tag nearby");
+                }
+                //old size check.
+                //int size = message.ToByteArray().Length;
+
+
+                try
+                {
+                    List<Android.Nfc.NdefRecord> records = new List<Android.Nfc.NdefRecord>();
+                    for (int i = 0; i < tagInfo.Records.Length; i++)
+                    {
+                        var record = tagInfo.Records[i];
+                        if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                            records.Add(ndefRecord);
+                    };
+                    Android.Nfc.NdefMessage msg = new Android.Nfc.NdefMessage(records.ToArray());
+                    //This Format works with Mifare Classic and NTAG213. Fails with ultralight. these are the chips I tested it with.
+                    //Both with pre used ones and with factory new ones.
+                    formatable.Format(msg);
+                }
+
+                catch (TagLostException tle)
+                {
+                    throw new Exception("Tag Lost Error: " + tle.Message);
+                }
+
+                catch (Android.Nfc.FormatException fe)
+                {
+                    throw new Exception("Tag Format Error: " + fe.Message);
+                }
+
+                catch (Exception e)
+                {
+                    //Assume that if we are here the tag is still touching the device, our message is correct, and the tag isnt busted.
+                    try
+                    {
+                        //we close this tech so we can open it as ultralight
+                        formatable.Close();
+                        //check if the connected chip is ultralight.
+                        if (_currentTag.GetTechList().Contains("android.nfc.tech.MifareUltralight"))
+                        {
+
+                            MifareUltralight ultralight = MifareUltralight.Get(_currentTag);
+                            if (ultralight != null)
+                            {
+                                try
+                                {
+                                    //connect with ultralight tech
+                                    ultralight.Connect();
+                                    //Found this on a stackoverflow question that had the same problem, apparently this sets it up to be NFC Forum Type 2 tag.
+                                    ultralight.Transceive(new byte[]
+                                    {
+                                    (byte)0xA2,//Write
+                                    (byte)0x03,//Page Nr = 3
+                                    (byte)0xE1,(byte)0x10,(byte)0x06, (byte)0x00//capability container (mapping version 1.0, 48 bytes for data available, read/ write allowed)
+                                    });
+                                    ultralight.Transceive(new byte[]
+                                    {
+                                    (byte)0xA2,//Write 
+                                    (byte)0x04,//Page nr = 4
+                                    (byte)0x03, (byte)0x00,(byte)0xFE,(byte)0x00 // empty NDEF TLV, Terminator TLV
+                                    });
+                                }
+                                catch (Exception e1)
+                                {
+
+                                }
+                                finally
+                                {
+                                    //Now the tag is formatted to accept NDEF
+                                    try
+                                    {
+                                        //Close this tech connection as this one doesnt have WriteNdef
+                                        ultralight.Close();
+                                        //Get the tag as Ndef
+                                        ndef = Ndef.Get(_currentTag);
+                                        //Connect
+                                        ndef.Connect();
+                                        //Check the message again JIC
+                                        List<Android.Nfc.NdefRecord> recordsFormat = new List<Android.Nfc.NdefRecord>();
+                                        for (int i = 0; i < tagInfo.Records.Length; i++)
+                                        {
+                                            var record = tagInfo.Records[i];
+                                            if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                                                recordsFormat.Add(ndefRecord);
+                                        };
+
+                                        Android.Nfc.NdefMessage msg = new Android.Nfc.NdefMessage(recordsFormat.ToArray());
+                                        //Write and close
+                                        ndef.WriteNdefMessage(msg);
+                                        ndef.Close();
+                                    }
+                                    catch
+                                    {
+
+                                    }
+
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception eform)
+                    {
+                        //
+                        throw new Exception("Tag Error: " + eform.ToString());
+                    }
+
+                }
+
+                finally
+                {
+                    //Used to not have the ultralight code in so i had to close here
+                    //formatable.Close();
+                    OnTagDisconnected?.Invoke(null, EventArgs.Empty);
+                }
+
+            }
+            else
+            {
+                //Rest as normal
+                try
+                {
+                    ndef.Connect();
+                    OnTagConnected?.Invoke(null, EventArgs.Empty);
+                }
+
+                catch
+                {
+                    throw new Exception("Tag Error: No Tag nearby");
+                }
+
+                if (!ndef.IsWritable)
+                {
+                    ndef.Close();
+                    throw new Exception("Tag Error: Tag is write locked");
+                }
+
+                
+                    try
+                    {
+                        List<Android.Nfc.NdefRecord> records = new List<Android.Nfc.NdefRecord>();
+                        for (int i = 0; i < tagInfo.Records.Length; i++)
+                        {
+                        var record = tagInfo.Records[i];
+                        if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                            records.Add(ndefRecord);
+                        }
+                        Android.Nfc.NdefMessage msg = new Android.Nfc.NdefMessage(records.ToArray());
+                        ndef.WriteNdefMessage(msg);
+                    }
+
+                    catch (TagLostException tle)
+                    {
+                        throw new Exception("Tag Lost Error: " + tle.Message);
+                    }
+
+
+                  
+
+                    catch (Android.Nfc.FormatException fe)
+                    {
+                        throw new Exception("Tag Format Error: " + fe.Message);
+                    }
+
+                    catch (Exception e)
+                    {
+                        throw new Exception("Tag Error: " + e.ToString());
+                    }
+
+                    finally
+                    {
+                        ndef.Close();
+                        OnTagConnected?.Invoke(null, EventArgs.Empty);
+                    }
+                
+            }
+        }
+
+            /// <summary>
+            /// Write or Clear a NDEF message
+            /// </summary>
+            /// <param name="tagInfo"><see cref="ITagInfo"/></param>
+            /// <param name="clearMessage">Clear Message</param>
+            /// <param name="makeReadOnly">Make tag read-only</param>
+            internal void WriteOrClearMessage(ITagInfo tagInfo, bool clearMessage = false, bool makeReadOnly = false)
 		{
 			try
 			{
@@ -183,81 +402,144 @@ namespace Plugin.NFC
 					throw new Exception(Configuration.Messages.NFCErrorMissingTagInfo);
 
 				var ndef = Ndef.Get(_currentTag);
-				if (ndef != null)
-				{
-					try
-					{
-						if (!ndef.IsWritable)
-							throw new Exception(Configuration.Messages.NFCErrorReadOnlyTag);
+                if (ndef != null)
+                {
+                    try
+                    {
+                        if (!ndef.IsWritable)
+                            throw new Exception(Configuration.Messages.NFCErrorReadOnlyTag);
 
-						if (ndef.MaxSize < NFCUtils.GetSize(tagInfo.Records))
-							throw new Exception(Configuration.Messages.NFCErrorCapacityTag);
+                        if (ndef.MaxSize < NFCUtils.GetSize(tagInfo.Records))
+                            throw new Exception(Configuration.Messages.NFCErrorCapacityTag);
 
-						ndef.Connect();
-						OnTagConnected?.Invoke(null, EventArgs.Empty);
+                        ndef.Connect();
+                        OnTagConnected?.Invoke(null, EventArgs.Empty);
 
-						NdefMessage message = null;
-						if (clearMessage)
-						{
-							message = GetEmptyNdefMessage();
-						}
-						else
-						{
-							var records = new List<NdefRecord>();
-							for (var i = 0; i < tagInfo.Records.Length; i++)
-							{
-								var record = tagInfo.Records[i];
-								if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
-									records.Add(ndefRecord);
-							}
+                        NdefMessage message = null;
+                        if (clearMessage)
+                        {
+                            message = GetEmptyNdefMessage();
+                        }
+                        else
+                        {
+                            var records = new List<NdefRecord>();
+                            for (var i = 0; i < tagInfo.Records.Length; i++)
+                            {
+                                var record = tagInfo.Records[i];
+                                if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                                    records.Add(ndefRecord);
+                            }
 
-							if (records.Any())
-								message = new NdefMessage(records.ToArray());
-						}
+                            if (records.Any())
+                                message = new NdefMessage(records.ToArray());
+                        }
 
-						if (message != null)
-						{
-							ndef.WriteNdefMessage(message);
+                        if (message != null)
+                        {
+                            ndef.WriteNdefMessage(message);
 
-							if (!clearMessage && makeReadOnly)
-							{
-								if (!MakeReadOnly(ndef))
-									Console.WriteLine("Cannot lock tag");
-							}
+                            if (!clearMessage && makeReadOnly)
+                            {
+                                if (!MakeReadOnly(ndef))
+                                    Console.WriteLine("Cannot lock tag");
+                            }
 
-							var nTag = GetTagInfo(_currentTag, ndef.NdefMessage);
-							OnMessagePublished?.Invoke(nTag);
-						}
-						else
-							throw new Exception(Configuration.Messages.NFCErrorWrite);
-					}
-					catch (Android.Nfc.TagLostException tlex)
-					{
-						throw new Exception("Tag Lost Error: " + tlex.Message);
-					}
-					catch (Java.IO.IOException ioex)
-					{
-						throw new Exception("Tag IO Error: " + ioex.Message);
-					}
-					catch (Android.Nfc.FormatException fe)
-					{
-						throw new Exception("Tag Format Error: " + fe.Message);
-					}
-					catch (Exception ex)
-					{
-						throw new Exception("Tag Error:" + ex.Message);
-					}
-					finally
-					{
-						if (ndef.IsConnected)
-							ndef.Close();
+                            var nTag = GetTagInfo(_currentTag, ndef.NdefMessage);
+                            OnMessagePublished?.Invoke(nTag);
+                        }
+                        else
+                            throw new Exception(Configuration.Messages.NFCErrorWrite);
+                    }
+                    catch (Android.Nfc.TagLostException tlex)
+                    {
+                        throw new Exception("Tag Lost Error: " + tlex.Message);
+                    }
+                    catch (Java.IO.IOException ioex)
+                    {
+                        throw new Exception("Tag IO Error: " + ioex.Message);
+                    }
+                    catch (Android.Nfc.FormatException fe)
+                    {
+                        throw new Exception("Tag Format Error: " + fe.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("Tag Error:" + ex.Message);
+                    }
+                    finally
+                    {
+                        if (ndef.IsConnected)
+                            ndef.Close();
 
-						_currentTag = null;
-						OnTagDisconnected?.Invoke(null, EventArgs.Empty);
-					}
-				}
-				else
-					throw new Exception(Configuration.Messages.NFCErrorNotCompliantTag);
+                        _currentTag = null;
+                        OnTagDisconnected?.Invoke(null, EventArgs.Empty);
+                    }
+                }
+                else
+                {
+                    if (_currentTag.GetTechList().Contains("android.nfc.tech.NdefFormatable"))
+                    {
+                        NdefFormatable ndefFormatable = NdefFormatable.Get(_currentTag);
+
+                        if (ndefFormatable != null)
+                        { // initialize tag with new NDEF message
+                            try
+                            {
+                                ndefFormatable.Connect();
+                               
+
+                                //Check if user wants to write to the tag
+                                NdefMessage message = null;
+                                var records = new List<NdefRecord>();
+                                for (var i = 0; i < tagInfo.Records.Length; i++)
+                                {
+                                    var record = tagInfo.Records[i];
+                                    if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                                        records.Add(ndefRecord);
+                                }
+
+                                if (records.Any())
+                                    message = new NdefMessage(records.ToArray());
+
+                                if (message != null)
+                                {
+                                    ndefFormatable.Format(message);
+                                   
+                                    var nTag = GetTagInfo(_currentTag, ndef.NdefMessage);
+                                    OnMessagePublished?.Invoke(nTag);
+                                }
+                                else
+                                {
+                                    ndefFormatable.Format(null);
+
+                                    var nTag = GetTagInfo(_currentTag, ndef.NdefMessage);
+                                    OnMessagePublished?.Invoke(nTag);
+                                }
+                                
+                            }
+                            catch(Exception e)
+                            {
+                                throw new Exception(e.StackTrace);
+                            }
+                            finally
+                            {
+                                try
+                                {
+                                    ndefFormatable.Close();
+                                }
+                                catch (Exception e)
+                                {
+                                    throw new Exception(Configuration.Messages.NFCErrorNotCompliantTag);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception(Configuration.Messages.NFCErrorNotCompliantTag);
+                        }
+                    }
+                }
+					
 			}
 			catch (Exception ex)
 			{
