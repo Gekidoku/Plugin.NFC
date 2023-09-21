@@ -174,7 +174,7 @@ namespace Plugin.NFC
 					}
 
 					var isNdefSupported = status != NFCNdefStatus.NotSupported;
-
+                    
 					var identifier = NfcNdefTagExtensions.GetTagIdentifier(ndefTag);
 					var nTag = new TagInfo(identifier, isNdefSupported)
 					{

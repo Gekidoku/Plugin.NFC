@@ -36,13 +36,15 @@
 		/// 
 		/// </summary>
 		public bool IsSupported { get; private set; }
+        public bool IsNdefFormatable { get; set; }
 
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public TagInfo()
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public TagInfo()
 		{
 			IsSupported = true;
+            IsNdefFormatable = false;
 		}
 
 		/// <summary>

@@ -171,6 +171,9 @@ namespace Plugin.NFC
 
         internal void WriteMessageAndFormat(ITagInfo tagInfo, bool makeReadOnly = false)
         {
+            //Credit to Pozone Alessandro for the starting point of this function 
+            //https://github.com/poz1/NFCForms
+
             if (_currentTag == null)
             {
                 throw new Exception(Configuration.Messages.NFCErrorMissingTag);
@@ -600,13 +603,13 @@ namespace Plugin.NFC
 
 			var ndef = Ndef.Get(tag);
 			var nTag = new TagInfo(tag.GetId(), ndef != null);
-
-			if (ndef != null)
+            nTag.IsNdefFormatable = tag.GetTechList().Contains("android.nfc.tech.NdefFormatable");
+            if (ndef != null)
 			{
 				nTag.Capacity = ndef.MaxSize;
 				nTag.IsWritable = ndef.IsWritable;
-
-				if (ndefMessage == null)
+                
+                if (ndefMessage == null)
 					ndefMessage = ndef.CachedNdefMessage;
 
 				if (ndefMessage != null)

@@ -25,6 +25,11 @@
 		/// </summary>
 		bool IsEmpty { get; }
 
+        ///<summary>
+        ///Supports NDEFFormat
+        ///</summary>
+        bool IsNdefFormatable { get; set; }
+
 		/// <summary>
 		/// Supported tag
 		/// </summary>
