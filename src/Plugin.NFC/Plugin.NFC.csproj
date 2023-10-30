@@ -4,15 +4,15 @@
     <!--Work around so the conditions work below-->
     <TargetFrameworks>netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0;net8.0;net8.0-android;net8.0-ios</TargetFrameworks>
 
-    <AssemblyName>Plugin.NFC</AssemblyName>
-    <RootNamespace>Plugin.NFC</RootNamespace>
-    <PackageId>Plugin.NFC</PackageId>
+    <AssemblyName>TRNSPRNT.NFC</AssemblyName>
+    <RootNamespace>TRNSPRNT.NFC</RootNamespace>
+    <PackageId>TRNSPRNT.NFC</PackageId>
 
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <AssemblyFileVersion>1.0.1</AssemblyFileVersion>
-    <Version>1.0.1</Version>
-    <PackageVersion>1.0.1</PackageVersion>
+    <AssemblyVersion>1.1.1</AssemblyVersion>
+    <AssemblyFileVersion>1.1.1</AssemblyFileVersion>
+    <Version>1.1.1</Version>
+    <PackageVersion>1.1.1</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants);</DefineConstants>
@@ -24,21 +24,20 @@
     <DebugType>portable</DebugType>
 
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/franckbour/Plugin.NFC</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/franckbour/Plugin.NFC</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Gekidoku/Plugin.NFC</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Gekidoku/Plugin.NFC</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/franckbour/Plugin.NFC/blob/master/CHANGELOG.md</PackageReleaseNotes>
-    <PackageIconUrl>https://github.com/franckbour/Plugin.NFC/raw/master/art/nfc128.png</PackageIconUrl>
+    <PackageIconUrl>https://github.com/Gekidoku/Plugin.NFC/raw/master/art/nfc128.png</PackageIconUrl>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>maui, xamarin, ios, android, xamarin.forms, plugin, NFC</PackageTags>
+    <PackageTags>maui, ios, android, plugin, NFC</PackageTags>
 
-    <Title>NFC Plugin for Xamarin</Title>
+    <Title>NFC Plugin for MAUI</Title>
     <Summary>A Cross-Platform plugin to easily read and write NFC tags.</Summary>
     <Description>Cross-Platform NFC (Near Field Communication) plugin to easily read and write NFC tags in your application.</Description>
 
-    <Owners>Franck Bour</Owners>
-    <Authors>Franck Bour</Authors>
-    <Copyright>Copyright 2022</Copyright>
+    <Owners>Tom Sproet</Owners>
+    <Authors>Tom Sproet</Authors>
+    <Copyright>Copyright 2023</Copyright>
 
     <!-- When built in 2019 will remove extra references on pack for iOS in System.Drawing.Common -->
     <DisableExtraReferences>false</DisableExtraReferences>
