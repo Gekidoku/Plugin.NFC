@@ -71,15 +71,48 @@ namespace Plugin.NFC
 		/// <summary>
 		/// Starts tags detection
 		/// </summary>
-		public void StartListening()
+		public void StartListening(string[][] techList = null)
 		{
 			_customInvalidation = false;
 			_isWriting = false;
 			_isFormatting = false;
-
-			NfcSession = new NFCTagReaderSession(NFCPollingOption.Iso14443 | NFCPollingOption.Iso15693, this, DispatchQueue.CurrentQueue)
+            NFCPollingOption pollingOption = NFCPollingOption.Iso14443 | NFCPollingOption.Iso15693;
+            if (techList != null)
+            {
+                pollingOption = 0;
+                foreach (var tech in techList)
+                {
+                    foreach (var t in tech)
+                    {
+                        switch (t)
+                        {
+                            case "android.nfc.tech.NfcA":
+                            case "android.nfc.tech.MifareClassic":
+                            case "android.nfc.tech.MifareUltralight":
+                                pollingOption |= NFCPollingOption.Iso14443;
+                                break;
+                            case "android.nfc.tech.NfcB":
+                                pollingOption |= NFCPollingOption.Iso14443;
+                                break;
+                            case "android.nfc.tech.NfcV":
+                                pollingOption |= NFCPollingOption.Iso15693;
+                                break;
+                            case "android.nfc.tech.NfcF":
+                                pollingOption |= NFCPollingOption.Iso18092;
+                                break;
+                               
+                        }
+                    }
+                }
+                if (pollingOption == 0)
+                {
+                    pollingOption = NFCPollingOption.Iso14443 | NFCPollingOption.Iso15693;
+                }
+            }
+            NfcSession = new NFCTagReaderSession(pollingOption, this, DispatchQueue.CurrentQueue)
 			{
 				AlertMessage = Configuration.Messages.NFCDialogAlertMessage
+                
 			};
 			NfcSession?.BeginSession();
 			OnTagListeningStatusChanged?.Invoke(true);
@@ -501,7 +534,7 @@ namespace Plugin.NFC
 		/// <summary>
 		/// Starts tags detection
 		/// </summary>
-		public void StartListening()
+		public void StartListening(string[][] techList = null)
 		{
 			_customInvalidation = false;
 			_isWriting = false;

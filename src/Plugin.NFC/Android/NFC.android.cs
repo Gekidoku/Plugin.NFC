@@ -78,6 +78,7 @@ namespace Plugin.NFC
 		{
 			_nfcAdapter = NfcAdapter.GetDefaultAdapter(CurrentContext);
 			Configuration = NfcConfiguration.GetDefaultConfiguration();
+           
 		}
 
 		/// <summary>
@@ -89,7 +90,7 @@ namespace Plugin.NFC
 		/// <summary>
 		/// Starts tags detection
 		/// </summary>
-		public void StartListening()
+		public void StartListening(string[][] techList = null)
 		{
 			if (_nfcAdapter == null)
 				return;
@@ -118,11 +119,13 @@ namespace Plugin.NFC
 
 			var filters = new IntentFilter[] { ndefFilter, tagFilter };
 
-			_nfcAdapter.EnableForegroundDispatch(CurrentActivity, pendingIntent, filters, null);
+			_nfcAdapter.EnableForegroundDispatch(CurrentActivity, pendingIntent, filters, techList);
 
 			_isListening = true;
 			OnTagListeningStatusChanged?.Invoke(_isListening);
 		}
+
+
 
 		/// <summary>
 		/// Stops tags detection

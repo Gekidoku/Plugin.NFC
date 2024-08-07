@@ -41,10 +41,20 @@ namespace Plugin.NFC
 		/// <param name="configuration"><see cref="NfcConfiguration"/></param>
 		void SetConfiguration(NfcConfiguration configuration);
 
-		/// <summary>
-		/// Starts tags detection
-		/// </summary>
-		void StartListening();
+        /// <summary>
+        /// Starts tags detection
+        /// </summary>
+        /// <param name="techList">
+        /// An optional array of string arrays specifying NFC technologies to filter for.
+        /// If null, all supported technologies will be detected.
+        /// Example:
+        /// new string[][] {
+        ///     new string[] { "android.nfc.tech.Ndef" },
+        ///     new string[] { "android.nfc.tech.MifareUltralight" },
+        ///     new string[] { "android.nfc.tech.MifareClassic" }
+        /// }
+        /// </param>
+        void StartListening(string[][] techList = null);
 
 		/// <summary>
 		/// Stops tags detection
