@@ -140,25 +140,6 @@ CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
 CrossNFC.Current.OniOSReadingSessionCancelled += Current_OniOSReadingSessionCancelled;
 ```
 
-### Launch app when a compatible tag is detected on Android
-
-In Android, you can use `IntentFilter` attribute on your `MainActivity` to initialize tag listening.
-```csharp
-[IntentFilter(new[] { NfcAdapter.ActionNdefDiscovered }, Categories = new[] { Intent.CategoryDefault }, DataMimeType = "application/com.companyname.yourapp")]
-public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity 
-{
-    ...
-}
-```
-To launch/open an app with a tag, `TypeFormat` of the record must be set to `NFCNdefTypeFormat.Mime` and `MimeType` should be setted to the same value of `IntentFilter.DataMimeType` (e.g. application/com.companyname.yourapp):
-```csharp
-var record = new NFCNdefRecord {
-    TypeFormat = NFCNdefTypeFormat.Mime,
-    MimeType = "application/com.companyname.yourapp",
-    Payload = NFCUtils.EncodeToByteArray(_writePayload)
-};
-``` 
-
 
 ### Read a tag
 * Start listening with `CrossNFC.Current.StartListening()`.
@@ -174,44 +155,6 @@ var record = new NFCNdefRecord {
 * Then `CrossNFC.Current.PublishMessage(ITagInfo)` when `OnTagDiscovered` event is raised.
 * Do not forget to call `CrossNFC.Current.StopPublishing()` once the tag has been cleared.
 
-
-For more examples, see sample application in the repository.
-
-### Customizing UI messages
-* Set a new `NfcConfiguration` object to `CrossNFC.Current` with `SetConfiguration(NfcConfiguration cfg)` method like below
-
-```Csharp
-// Custom NFC configuration (ex. UI messages in French)
-CrossNFC.Current.SetConfiguration(new NfcConfiguration
-{
-    Messages = new UserDefinedMessages
-    {
-        NFCSessionInvalidated = "Session invalidée",
-        NFCSessionInvalidatedButton = "OK",
-        NFCWritingNotSupported = "L'écriture des TAGs NFC n'est pas supporté sur cet appareil",
-        NFCDialogAlertMessage = "Approchez votre appareil du tag NFC",
-        NFCErrorRead = "Erreur de lecture. Veuillez rééssayer",
-        NFCErrorEmptyTag = "Ce tag est vide",
-        NFCErrorReadOnlyTag = "Ce tag n'est pas accessible en écriture",
-        NFCErrorCapacityTag = "La capacité de ce TAG est trop basse",
-        NFCErrorMissingTag = "Aucun tag trouvé",
-        NFCErrorMissingTagInfo = "Aucune information à écrire sur le tag",
-        NFCErrorNotSupportedTag = "Ce tag n'est pas supporté",
-        NFCErrorNotCompliantTag = "Ce tag n'est pas compatible NDEF",
-        NFCErrorWrite = "Aucune information à écrire sur le tag",
-        NFCSuccessRead = "Lecture réussie",
-        NFCSuccessWrite = "Ecriture réussie",
-        NFCSuccessClear = "Effaçage réussi"
-    }
-});
-```
-
-## Tutorials
-Thanks to Saamer Mansoor ([@saamerm](https://github.com/saamerm)) who wrote this excellent article on [Medium](https://medium.com/@prototypemakers/start-building-with-nfc-rfid-tags-on-ios-android-using-xamarin-today-2268cf86d3b4) about Plugin.NFC and how to use it, check it out!
-
-He also made this video:
-
-[![NFC apps on iOS & Android using Xamarin Forms or Native](http://img.youtube.com/vi/STfzU18v7gE/0.jpg)](https://www.youtube.com/watch?v=STfzU18v7gE "Click to play on YouTube.com")
 
 ## Contributing
 Feel free to contribute. PRs are accepted and welcomed.
