@@ -119,10 +119,19 @@ namespace Plugin.NFC
 
 			var filters = new IntentFilter[] { ndefFilter, tagFilter };
 
-			_nfcAdapter.EnableForegroundDispatch(CurrentActivity, pendingIntent, filters, techList);
+            if (CurrentActivity is not null && !CurrentActivity.IsDestroyed && !CurrentActivity.IsFinishing)
+            {
+                _nfcAdapter.EnableForegroundDispatch(CurrentActivity, pendingIntent, filters, techList);
 
-			_isListening = true;
-			OnTagListeningStatusChanged?.Invoke(_isListening);
+
+                _isListening = true;
+                OnTagListeningStatusChanged?.Invoke(_isListening);
+            }
+            else
+            {
+                _isListening = false;
+                OnTagListeningStatusChanged?.Invoke(_isListening);
+            }
 		}
 
 
