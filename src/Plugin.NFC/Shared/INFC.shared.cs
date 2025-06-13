@@ -84,11 +84,16 @@ namespace Plugin.NFC
 		/// </summary>
 		/// <param name="tagInfo">see <see cref="ITagInfo"/></param>
 		void ClearMessage(ITagInfo tagInfo);
+        /// <summary>
+        /// Clear delegates for MessageReceived
+        /// </summary>
+        void RemoveAllDelegates();
 
-		/// <summary>
-		/// Event raised when tag is connected
-		/// </summary>
-		event EventHandler OnTagConnected;
+
+        /// <summary>
+        /// Event raised when tag is connected
+        /// </summary>
+        event EventHandler OnTagConnected;
 
 		/// <summary>
 		/// Event raised when tag is disconnected

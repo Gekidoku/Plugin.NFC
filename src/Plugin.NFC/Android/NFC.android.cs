@@ -20,11 +20,36 @@ namespace Plugin.NFC
 	{
 		public event EventHandler OnTagConnected;
 		public event EventHandler OnTagDisconnected;
-		public event NdefMessageReceivedEventHandler OnMessageReceived;
+        List<NdefMessageReceivedEventHandler> delegates = new List<NdefMessageReceivedEventHandler>();
+        private event NdefMessageReceivedEventHandler OnMessageReceivedReal;
+
+        public event NdefMessageReceivedEventHandler OnMessageReceived
+        {
+            add
+            {
+                OnMessageReceivedReal += value;
+                delegates.Add(value);
+
+            }
+            remove
+            {
+                OnMessageReceivedReal -= value;
+                delegates.Remove(value);
+            }
+        }
 		public event NdefMessagePublishedEventHandler OnMessagePublished;
 		public event TagDiscoveredEventHandler OnTagDiscovered;
 		public event EventHandler OniOSReadingSessionCancelled;
 		public event TagListeningStatusChangedEventHandler OnTagListeningStatusChanged;
+
+        public void RemoveAllDelegates()
+        {
+            foreach(NdefMessageReceivedEventHandler eh in delegates)
+            {
+                OnMessageReceivedReal -= eh;
+            }
+            delegates.Clear();
+        }
 
 		readonly NfcAdapter _nfcAdapter;
 
@@ -541,12 +566,15 @@ namespace Plugin.NFC
 					}
 					else
 					{
-						// Read mode
-						OnMessageReceived?.Invoke(nTag);
+                        // Read mode
+                        OnMessageReceivedReal?.Invoke(nTag);
 					}
 				}
 			}
 		}
+
+
+
 
 		/// <summary>
 		/// Handle Android OnResume

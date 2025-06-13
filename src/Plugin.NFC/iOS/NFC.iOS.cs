@@ -19,8 +19,32 @@ namespace Plugin.NFC
 
 		public event EventHandler OnTagConnected;
 		public event EventHandler OnTagDisconnected;
-		public event NdefMessageReceivedEventHandler OnMessageReceived;
-		public event NdefMessagePublishedEventHandler OnMessagePublished;
+        List<NdefMessageReceivedEventHandler> delegates = new List<NdefMessageReceivedEventHandler>();
+        private event NdefMessageReceivedEventHandler OnMessageReceivedReal;
+
+        public event NdefMessageReceivedEventHandler OnMessageReceived
+        {
+            add
+            {
+                OnMessageReceivedReal += value;
+                delegates.Add(value);
+
+            }
+            remove
+            {
+                OnMessageReceivedReal -= value;
+                delegates.Remove(value);
+            }
+        }
+        public void RemoveAllDelegates()
+        {
+            foreach (NdefMessageReceivedEventHandler eh in delegates)
+            {
+                OnMessageReceivedReal -= eh;
+            }
+            delegates.Clear();
+        }
+        public event NdefMessagePublishedEventHandler OnMessagePublished;
 		public event TagDiscoveredEventHandler OnTagDiscovered;
 		public event EventHandler OniOSReadingSessionCancelled;
 		public event OnNfcStatusChangedEventHandler OnNfcStatusChanged;
@@ -219,7 +243,7 @@ namespace Plugin.NFC
 					{
 						session.AlertMessage = Configuration.Messages.NFCErrorNotSupportedTag;
 
-						OnMessageReceived?.Invoke(nTag);
+						OnMessageReceivedReal?.Invoke(nTag);
 						Invalidate(session);
 						return;
 					}
@@ -246,7 +270,7 @@ namespace Plugin.NFC
 							session.AlertMessage = Configuration.Messages.NFCSuccessRead;
 
 							nTag.Records = NFCNdefPayloadExtensions.GetRecords(message?.Records);
-							OnMessageReceived?.Invoke(nTag);
+                            OnMessageReceivedReal?.Invoke(nTag);
 							Invalidate(session);
 						});
 					}
@@ -488,8 +512,32 @@ namespace Plugin.NFC
 
 		public event EventHandler OnTagConnected;
 		public event EventHandler OnTagDisconnected;
-		public event NdefMessageReceivedEventHandler OnMessageReceived;
-		public event NdefMessagePublishedEventHandler OnMessagePublished;
+        List<NdefMessageReceivedEventHandler> delegates = new List<NdefMessageReceivedEventHandler>();
+        private event NdefMessageReceivedEventHandler OnMessageReceivedReal;
+
+        public event NdefMessageReceivedEventHandler OnMessageReceived
+        {
+            add
+            {
+                OnMessageReceivedReal += value;
+                delegates.Add(value);
+
+            }
+            remove
+            {
+                OnMessageReceivedReal -= value;
+                delegates.Remove(value);
+            }
+        }
+        public void RemoveAllDelegates()
+        {
+            foreach (NdefMessageReceivedEventHandler eh in delegates)
+            {
+                OnMessageReceivedReal -= eh;
+            }
+            delegates.Clear();
+        }
+        public event NdefMessagePublishedEventHandler OnMessagePublished;
 		public event TagDiscoveredEventHandler OnTagDiscovered;
 		public event EventHandler OniOSReadingSessionCancelled;
 		public event OnNfcStatusChangedEventHandler OnNfcStatusChanged;
@@ -620,7 +668,7 @@ namespace Plugin.NFC
 					IsWritable = false,
 					Records = NFCNdefPayloadExtensions.GetRecords(first.Records)
 				};
-				OnMessageReceived?.Invoke(tagInfo);
+				OnMessageReceivedReal?.Invoke(tagInfo);
 			}
 
 			OnTagDisconnected?.Invoke(null, EventArgs.Empty);
@@ -671,7 +719,7 @@ namespace Plugin.NFC
 					{
 						session.AlertMessage = Configuration.Messages.NFCErrorNotSupportedTag;
 
-						OnMessageReceived?.Invoke(nTag);
+						OnMessageReceivedReal?.Invoke(nTag);
 						Invalidate(session);
 						return;
 					}
@@ -697,7 +745,7 @@ namespace Plugin.NFC
 							session.AlertMessage = Configuration.Messages.NFCSuccessRead;
 
 							nTag.Records = NFCNdefPayloadExtensions.GetRecords(message?.Records);
-							OnMessageReceived?.Invoke(nTag);
+							OnMessageReceivedReal?.Invoke(nTag);
 							Invalidate(session);
 						});
 					}
