@@ -9,10 +9,10 @@
     <PackageId>TRNSPRNT.NFC</PackageId>
 
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>1.3</AssemblyVersion>
-    <AssemblyFileVersion>1.3</AssemblyFileVersion>
-    <Version>1.3</Version>
-    <PackageVersion>1.3</PackageVersion>
+    <AssemblyVersion>1.4</AssemblyVersion>
+    <AssemblyFileVersion>1.4</AssemblyFileVersion>
+    <Version>1.4-pre</Version>
+    <PackageVersion>1.4</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants);</DefineConstants>
