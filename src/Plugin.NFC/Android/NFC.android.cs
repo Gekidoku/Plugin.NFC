@@ -388,7 +388,7 @@ namespace Plugin.NFC
                 if (!ndef.IsWritable)
                 {
                     ndef.Close();
-                    throw new Exception(Configuration.Messages.NFCWritingNotSupported + " Locked");
+                    return;
                 }
 
                 
