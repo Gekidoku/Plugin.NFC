@@ -11,8 +11,8 @@
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.5</AssemblyVersion>
     <AssemblyFileVersion>1.5</AssemblyFileVersion>
-    <Version>1.5-pre</Version>
-    <PackageVersion>1.5-pre</PackageVersion>
+    <Version>1.5.1-pre</Version>
+    <PackageVersion>1.5.1-pre</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants);</DefineConstants>
