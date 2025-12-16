@@ -1,109 +1,50 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--Work around so the conditions work below-->
-    <TargetFrameworks>netstandard2.0;net10.0;net10.0-android;net10.0-ios</TargetFrameworks>
+    <TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
-    <AssemblyName>TRNSPRNT.NFC</AssemblyName>
-    <RootNamespace>TRNSPRNT.NFC</RootNamespace>
-    <PackageId>TRNSPRNT.NFC</PackageId>
+    <NoWarn>CA1416,CA1422,CA1859;CS0067</NoWarn>
 
-    <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>2.0</AssemblyVersion>
-    <AssemblyFileVersion>2.0</AssemblyFileVersion>
-    <Version>2.0.0-pre</Version>
-    <PackageVersion>2.0.0-pre</PackageVersion>
-    <PackOnBuild>true</PackOnBuild>
-    <NeutralLanguage>en</NeutralLanguage>
-    <DefineConstants>$(DefineConstants);</DefineConstants>
-    <NoWarn>CS0067</NoWarn>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
-    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <LangVersion>latest</LangVersion>
-    <DebugType>portable</DebugType>
-
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Gekidoku/Plugin.NFC</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Gekidoku/Plugin.NFC</RepositoryUrl>
+    <!-- NuGet -->
+    <Authors>franckbour</Authors>
+    <Copyright>Copyright © franckbour and contributors</Copyright>
+    <IsPackable>True</IsPackable>
+    <PackageProjectUrl>https://github.com/franckbour/Plugin.NFC</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/franckbour/Plugin.NFC</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIconUrl>https://github.com/Gekidoku/Plugin.NFC/raw/master/art/nfc128.png</PackageIconUrl>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>maui, ios, android, plugin, NFC</PackageTags>
-
-    <Title>NFC Plugin for MAUI</Title>
-    <Summary>A Cross-Platform plugin to easily read and write NFC tags.</Summary>
-    <Description>Cross-Platform NFC (Near Field Communication) plugin to easily read and write NFC tags in your application.</Description>
-
-    <Owners>Tom Sproet</Owners>
-    <Authors>Tom Sproet</Authors>
-    <Copyright>Copyright 2024</Copyright>
-
-    <!-- When built in 2019 will remove extra references on pack for iOS in System.Drawing.Common -->
-    <DisableExtraReferences>false</DisableExtraReferences>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-    <!-- sourcelink: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PackageTags>dotnet-maui;maui;nfc;ndef;</PackageTags>
+    <IncludeSymbols>True</IncludeSymbols>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <!-- sourcelink: Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <!-- sourcelink: Include PDB in the built .nupkg -->
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Title>NFC Plugin for .NET Maui</Title>
+    <Description>Plugin.NFC provides the ability to easily read on write NFC tags in your application.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <DebugType>portable</DebugType>
+    <PackageIconUrl>https://github.com/franckbour/Plugin.NFC/raw/master/art/nfc128.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>https://github.com/franckbour/Plugin.NFC/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
   </PropertyGroup>
-
-  <PropertyGroup>
-    <_NET6 Condition=" $(TargetFramework.Contains('net6')) ">true</_NET6>
-    <_NET10 Condition=" $(TargetFramework.Contains('net10')) ">true</_NET10>
-    <_DROID Condition=" $(TargetFramework.ToLowerInvariant().Contains('droid')) ">true</_DROID>
-    <_IOS Condition=" $(TargetFramework.ToLowerInvariant().Contains('ios')) ">true</_IOS>
-    <_MOBILE Condition=" '$(_DROID)' == 'true' OR '$(_IOS)' == 'true' ">true</_MOBILE>
-
-    <DefineConstants Condition=" '$(_DROID)' == 'true' ">$(DefineConstants);__ANDROID__;__MOBILE__;</DefineConstants>
-    <DefineConstants Condition=" '$(_IOS)' == 'true' ">$(DefineConstants);__IOS__;__MOBILE__;</DefineConstants>
-    <DefineConstants Condition=" '$(_NET6)' == 'true' ">$(DefineConstants);__NET6__;</DefineConstants>
-    <DefineConstants Condition=" '$(_NET10)' == 'true' ">$(DefineConstants);__NET10__;</DefineConstants>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" ('$(_NET6)' == 'true' OR '$(_NET10)' == 'true') AND '$(_MOBILE)' == 'true' ">
-    <SupportedOSPlatformVersion Condition="'$(_IOS)' == 'true'">11.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="'$(_DROID)' == 'true'">21.0</SupportedOSPlatformVersion> 
-  </PropertyGroup>
-  
-  <!-- Deterministic Builds (Azure Pipelines) -->
-  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\art\nfc128.png" PackagePath="icon.png" Pack="true" />
-    <Compile Include="**\*.shared.cs" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
   </ItemGroup>
-
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) OR '$(TargetFramework)' == 'net6.0' ">
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(_DROID)' == 'true' ">
-    <Compile Include="**\*.android.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(_IOS)' == 'true' ">
-    <Compile Include="**\*.iOS.cs" />
+  
+  <!-- Package additions -->
+  <ItemGroup>
+    <None Include="..\..\art\nfc128.png" PackagePath="icon.png" Visible="false" Pack="true" />
+    <None Include="..\..\README.md" Pack="true" Visible="false" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
