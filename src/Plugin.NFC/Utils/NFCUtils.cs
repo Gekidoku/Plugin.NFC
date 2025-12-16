@@ -3,7 +3,7 @@
 using UIKit;
 #endif
 
-namespace Plugin.NFC.Utils;
+namespace TRNSPRNT.NFC.Utils;
 
 /// <summary>
 /// NFC tools

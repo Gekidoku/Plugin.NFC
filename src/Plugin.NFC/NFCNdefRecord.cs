@@ -1,6 +1,6 @@
-﻿using Plugin.NFC.Utils;
+﻿using TRNSPRNT.NFC.Utils;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 /// <summary>
 /// Class describing the information containing within a NFC tag

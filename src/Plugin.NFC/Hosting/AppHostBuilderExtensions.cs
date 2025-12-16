@@ -1,9 +1,9 @@
 ﻿#if ANDROID
 using Microsoft.Maui.LifecycleEvents;
 #endif
-using Plugin.NFC.Configuration;
+using TRNSPRNT.NFC.Configuration;
 
-namespace Plugin.NFC.Hosting;
+namespace TRNSPRNT.NFC.Hosting;
 
 public static class AppHostBuilderExtensions
 {

@@ -1,4 +1,4 @@
-﻿namespace Plugin.NFC;
+﻿namespace TRNSPRNT.NFC;
 
 /// <summary>
 /// Cross NFC

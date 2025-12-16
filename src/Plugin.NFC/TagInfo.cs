@@ -1,6 +1,6 @@
-﻿using Plugin.NFC.Utils;
+﻿using TRNSPRNT.NFC.Utils;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 /// <summary>
 /// Default implementation of <see cref="ITagInfo"/>

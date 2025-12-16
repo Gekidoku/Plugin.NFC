@@ -1,12 +1,12 @@
 ﻿using CoreFoundation;
 using CoreNFC;
 using Foundation;
-using Plugin.NFC.Configuration;
-using Plugin.NFC.Utils;
+using TRNSPRNT.NFC.Configuration;
+using TRNSPRNT.NFC.Utils;
 using System.Text;
 using UIKit;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 /// <summary>
 /// iOS 13+ implementation of <see cref="INFC"/>

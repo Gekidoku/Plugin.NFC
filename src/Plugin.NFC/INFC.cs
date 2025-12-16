@@ -1,6 +1,6 @@
-﻿using Plugin.NFC.Configuration;
+﻿using TRNSPRNT.NFC.Configuration;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 public delegate void NdefMessageReceivedEventHandler(ITagInfo tagInfo);
 public delegate void NdefMessagePublishedEventHandler(ITagInfo tagInfo);

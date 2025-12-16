@@ -1,6 +1,6 @@
 ﻿using Android.Content;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 public static partial class CrossNFC
 {

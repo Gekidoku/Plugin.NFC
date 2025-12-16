@@ -3,11 +3,11 @@ using Android.App;
 using Android.Content;
 using Android.Nfc;
 using Android.Nfc.Tech;
-using Plugin.NFC.Configuration;
-using Plugin.NFC.Utils;
+using TRNSPRNT.NFC.Configuration;
+using TRNSPRNT.NFC.Utils;
 using System.Text;
 
-namespace Plugin.NFC;
+namespace TRNSPRNT.NFC;
 
 /// <summary>
 /// Android implementation of <see cref="INFC"/>
@@ -327,7 +327,12 @@ internal sealed class NFCImplementation_Android : INFC
                     OnTagConnected?.Invoke(null, EventArgs.Empty);
                     isTagConnected = true;
 
-                    ndefFormatable.Format(GetEmptyNdefMessage());
+                    // Try to format with special handling for Mifare Ultralight
+                    if (!TryFormatWithUltralightHandling(ndefFormatable, tagInfo, clearMessage, makeReadOnly))
+                    {
+                        // Fallback to standard formatting
+                        ndefFormatable.Format(GetEmptyNdefMessage());
+                    }
                 }
                 catch (Android.Nfc.TagLostException tlex)
                 {
@@ -566,6 +571,105 @@ internal sealed class NFCImplementation_Android : INFC
 
         }
         return ndefRecord;
+    }
+
+    /// <summary>
+    /// Attempt to format a tag with special handling for Mifare Ultralight
+    /// </summary>
+    /// <param name="ndefFormatable">NdefFormatable instance</param>
+    /// <param name="tagInfo">Tag information</param>
+    /// <param name="clearMessage">Whether to clear the message</param>
+    /// <param name="makeReadOnly">Whether to make the tag read-only</param>
+    /// <returns>True if formatting was successful, false if standard formatting should be used</returns>
+    private bool TryFormatWithUltralightHandling(NdefFormatable ndefFormatable, ITagInfo tagInfo, bool clearMessage, bool makeReadOnly)
+    {
+        // Check if this is a Mifare Ultralight tag
+        if (!_currentTag.GetTechList().Contains("android.nfc.tech.MifareUltralight"))
+            return false;
+
+        try
+        {
+            MifareUltralight ultralight = MifareUltralight.Get(_currentTag);
+            if (ultralight == null)
+                return false;
+
+            try
+            {
+                // Connect with ultralight tech
+                ultralight.Connect();
+
+                // Set up Mifare Ultralight as NFC Forum Type 2 tag
+                ultralight.Transceive(new byte[]
+                {
+                    (byte)0xA2, // Write
+                    (byte)0x03, // Page Nr = 3
+                    (byte)0xE1, (byte)0x10, (byte)0x06, (byte)0x00 // capability container
+                });
+                ultralight.Transceive(new byte[]
+                {
+                    (byte)0xA2, // Write
+                    (byte)0x04, // Page nr = 4
+                    (byte)0x03, (byte)0x00, (byte)0xFE, (byte)0x00 // empty NDEF TLV, Terminator TLV
+                });
+
+                // Now the tag is formatted to accept NDEF
+                try
+                {
+                    // Close this tech connection as this one doesn't have WriteNdef
+                    ultralight.Close();
+
+                    // Get the tag as Ndef
+                    var ndef = Ndef.Get(_currentTag);
+
+                    // Connect
+                    ndef.Connect();
+
+                    // Create and write the message
+                    NdefMessage message;
+                    if (clearMessage)
+                    {
+                        message = GetEmptyNdefMessage();
+                    }
+                    else
+                    {
+                        var records = new List<NdefRecord>();
+                        foreach (var record in tagInfo.Records)
+                        {
+                            if (GetAndroidNdefRecord(record) is NdefRecord ndefRecord)
+                                records.Add(ndefRecord);
+                        }
+                        message = new NdefMessage(records.ToArray());
+                    }
+
+                    ndef.WriteNdefMessage(message);
+
+                    if (!clearMessage && makeReadOnly)
+                    {
+                        if (!MakeReadOnly(ndef))
+                            Console.WriteLine("Cannot lock tag");
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+                finally
+                {
+                    if (ultralight.IsConnected)
+                        ultralight.Close();
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>

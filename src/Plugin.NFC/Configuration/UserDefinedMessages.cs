@@ -1,4 +1,4 @@
-﻿namespace Plugin.NFC.Configuration;
+﻿namespace TRNSPRNT.NFC.Configuration;
 
 /// <summary>
 /// User defined UI messages
