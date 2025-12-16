@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <!--Work around so the conditions work below-->
-    <TargetFrameworks>netstandard2.0;net9.0;net9.0-android;net9.0-ios</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net10.0;net10.0-android;net10.0-ios</TargetFrameworks>
 
     <AssemblyName>TRNSPRNT.NFC</AssemblyName>
     <RootNamespace>TRNSPRNT.NFC</RootNamespace>
     <PackageId>TRNSPRNT.NFC</PackageId>
 
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>1.5</AssemblyVersion>
-    <AssemblyFileVersion>1.5</AssemblyFileVersion>
-    <Version>1.5.1-pre</Version>
-    <PackageVersion>1.5.1-pre</PackageVersion>
+    <AssemblyVersion>2.0</AssemblyVersion>
+    <AssemblyFileVersion>2.0</AssemblyFileVersion>
+    <Version>2.0.0-pre</Version>
+    <PackageVersion>2.0.0-pre</PackageVersion>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants);</DefineConstants>
@@ -37,7 +37,7 @@
 
     <Owners>Tom Sproet</Owners>
     <Authors>Tom Sproet</Authors>
-    <Copyright>Copyright 2023</Copyright>
+    <Copyright>Copyright 2024</Copyright>
 
     <!-- When built in 2019 will remove extra references on pack for iOS in System.Drawing.Common -->
     <DisableExtraReferences>false</DisableExtraReferences>
@@ -64,6 +64,7 @@
 
   <PropertyGroup>
     <_NET6 Condition=" $(TargetFramework.Contains('net6')) ">true</_NET6>
+    <_NET10 Condition=" $(TargetFramework.Contains('net10')) ">true</_NET10>
     <_DROID Condition=" $(TargetFramework.ToLowerInvariant().Contains('droid')) ">true</_DROID>
     <_IOS Condition=" $(TargetFramework.ToLowerInvariant().Contains('ios')) ">true</_IOS>
     <_MOBILE Condition=" '$(_DROID)' == 'true' OR '$(_IOS)' == 'true' ">true</_MOBILE>
@@ -71,10 +72,11 @@
     <DefineConstants Condition=" '$(_DROID)' == 'true' ">$(DefineConstants);__ANDROID__;__MOBILE__;</DefineConstants>
     <DefineConstants Condition=" '$(_IOS)' == 'true' ">$(DefineConstants);__IOS__;__MOBILE__;</DefineConstants>
     <DefineConstants Condition=" '$(_NET6)' == 'true' ">$(DefineConstants);__NET6__;</DefineConstants>
+    <DefineConstants Condition=" '$(_NET10)' == 'true' ">$(DefineConstants);__NET10__;</DefineConstants>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(_NET6)' == 'true' AND '$(_MOBILE)' == 'true' ">
+  <PropertyGroup Condition=" ('$(_NET6)' == 'true' OR '$(_NET10)' == 'true') AND '$(_MOBILE)' == 'true' ">
     <SupportedOSPlatformVersion Condition="'$(_IOS)' == 'true'">11.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="'$(_DROID)' == 'true'">21.0</SupportedOSPlatformVersion> 
   </PropertyGroup>

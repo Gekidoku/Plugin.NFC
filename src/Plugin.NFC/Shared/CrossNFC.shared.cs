@@ -52,7 +52,7 @@ namespace Plugin.NFC
 
         static INFC CreateNFC()
         {
-#if NETSTANDARD || !__MOBILE__
+#if NETSTANDARD || !(__MOBILE__ || NET6_0_OR_GREATER || NET10_0_OR_GREATER)
             return null;
 #elif __IOS__
 			ObjCRuntime.Class.ThrowOnInitFailure = false;
